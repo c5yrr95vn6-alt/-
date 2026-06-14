@@ -84,7 +84,22 @@ label{display:block;margin-top:12px;margin-bottom:6px;font-weight:900;font-size:
   <section id="summary" class="section">
     <div class="card panel" id="orderCard">
       <h2>발주 수량 정리</h2>
-      <div id="orderResult" class="order-list"></div>
+      <div id="orderResult" class="order-list">
+<div class="order-row header">
+  <div>품목</div><div class="meta">구분 / 설명</div><div class="qty">발주 수량</div>
+</div>
+<div class="order-row"><div><div class="name">WM 36067M</div><div class="meta">타일</div></div><div class="meta">벽타일 / 300 × 600</div><div class="qty">12박스</div></div>
+<div class="order-row"><div><div class="name">FB 33067</div><div class="meta">타일</div></div><div class="meta">바닥타일 / 300 × 300</div><div class="qty">3박스</div></div>
+<div class="order-row"><div><div class="name">중앙판 1350×1850</div><div class="meta">천장재</div></div><div class="meta">천장재</div><div class="qty">1장</div></div>
+<div class="order-row"><div><div class="name">사이드판 1000×1850</div><div class="meta">천장재</div></div><div class="meta">천장재</div><div class="qty">1장</div></div>
+<div class="order-row"><div><div class="name">하츠 환풍기</div><div class="meta">환풍기</div></div><div class="meta">환풍기</div><div class="qty">1개</div></div>
+<div class="order-row"><div><div class="name">6인치 / 주광색</div><div class="meta">다운라이트</div></div><div class="meta">다운라이트</div><div class="qty">2개</div></div>
+<div class="order-row"><div><div class="name">수림 SL-3320</div><div class="meta">도기</div></div><div class="meta">세면대</div><div class="qty">1개</div></div>
+<div class="order-row"><div><div class="name">수림 SC-7750</div><div class="meta">도기</div></div><div class="meta">양변기</div><div class="qty">1개</div></div>
+<div class="order-row"><div><div class="name">앵글밸브</div><div class="meta">배관자재</div></div><div class="meta">앵글밸브</div><div class="qty">3개</div></div>
+<div class="order-row"><div><div class="name">윈텍 세면수전</div><div class="meta">수전</div></div><div class="meta">세면수전</div><div class="qty">1개</div></div>
+<div class="order-row"><div><div class="name">윈텍 샤워수전</div><div class="meta">수전</div></div><div class="meta">샤워수전</div><div class="qty">1개</div></div>
+</div>
 
       <div class="grid2" style="margin-top:14px;">
         <button class="action" id="shareOrderBtn" type="button">카톡으로 보내기 / 공유</button>
@@ -204,6 +219,7 @@ function renderOrder(){
 
   rows = rows.concat(productRows());
 
+  target.className = 'order-list';
   target.innerHTML =
     '<div class="order-row header"><div>품목</div><div class="meta">구분 / 설명</div><div class="qty">발주 수량</div></div>' +
     rows.map(function(r){
@@ -292,7 +308,8 @@ function updateAll(){
   try { renderProducts(); } catch(e) {}
   try { renderOrder(); } catch(e) {
     var target = el('orderResult');
-    if(target) target.innerHTML = '<div class="notice">발주표 표시 오류: ' + e.message + '</div>';
+    if(target) target.className = 'order-list';
+  target.innerHTML = '<div class="notice">발주표 표시 오류: ' + e.message + '</div>';
   }
 }
 function init(){
@@ -302,7 +319,7 @@ function init(){
   }
 
   document.querySelectorAll('.tab').forEach(function(btn){
-    btn.onclick = function(){showTab(btn.getAttribute('data-tab'));};
+    btn.onclick = function(){showTab(btn.getAttribute('data-tab')); if(btn.getAttribute('data-tab')==='summary'){setTimeout(function(){try{renderOrder();}catch(e){}},50);} };
   });
   document.querySelectorAll('[data-go]').forEach(function(btn){
     btn.onclick = function(){showTab(btn.getAttribute('data-go'));};
@@ -331,7 +348,8 @@ function init(){
 window.addEventListener('error', function(e){
   var target = document.getElementById('orderResult');
   if(target && target.innerHTML.indexOf('order-row') === -1){
-    target.innerHTML = '<div class="notice">스크립트 오류로 발주표가 표시되지 않았습니다: ' + e.message + '</div>';
+    target.className = 'order-list';
+  target.innerHTML = '<div class="notice">스크립트 오류로 발주표가 표시되지 않았습니다: ' + e.message + '</div>';
   }
 });
 
