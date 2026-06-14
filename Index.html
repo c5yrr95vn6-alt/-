@@ -84,7 +84,8 @@ label{display:block;margin-top:12px;margin-bottom:6px;font-weight:900;font-size:
   <section id="summary" class="section">
     <div class="card panel" id="orderCard">
       <h2>발주 수량 정리</h2>
-      <div id="orderResult"><div class="notice">발주 수량을 계산 중입니다.</div></div>
+      <div id="orderResult" class="order-list"></div>
+
       <div class="grid2" style="margin-top:14px;">
         <button class="action" id="shareOrderBtn" type="button">카톡으로 보내기 / 공유</button>
         <button class="action secondary" id="copyOrderBtn" type="button">발주 내용 복사</button>
@@ -134,60 +135,96 @@ function autoCeiling(){
 function renderProducts(){var sink=el('sink').value,toilet=el('toilet').value,basin=el('basinFaucet').value,shower=el('showerFaucet').value;el('sinkName').innerText=labelSelect('sink');el('toiletName').innerText=labelSelect('toilet');el('basinFaucetName').innerText=labelSelect('basinFaucet');el('showerFaucetName').innerText=labelSelect('showerFaucet');el('sinkImg').src=productImages[sink]||'';el('toiletImg').src=productImages[toilet]||'';el('basinFaucetImg').src=productImages[basin]||'';el('showerFaucetImg').src=productImages[shower]||'';el('sinkSize').innerText=productSpecs[sink]||'';el('toiletSize').innerText=productSpecs[toilet]||'';el('basinFaucetSize').innerText=productSpecs[basin]||'';el('showerFaucetSize').innerText=productSpecs[shower]||'';}
 
 function productRows(){
-  var tapText = el('tap').value.trim() || '없음';
-  var zendaText = labelSelect('zenda');
-  if(el('zenda').value === '기타') {
-    zendaText = (el('zendaOther') && el('zendaOther').value.trim()) || '기타';
+  var rows = [];
+  function v(id){ var node = el(id); return node ? node.value : ''; }
+  function txt(id){ var node = el(id); return node && node.options ? node.options[node.selectedIndex].text : v(id); }
+  function num(id){ return Number(v(id)) || 0; }
+
+  var zendaText = txt('zenda');
+  if(v('zenda') === '기타') {
+    zendaText = (v('zendaOther') || '기타');
   }
 
-  return [
-    ['천장재','중앙판 1350×1850','천장재',qtyValue('ceilCenter')+'장'],
-    ['천장재','사이드판 400×1850','천장재',qtyValue('ceilSide400')+'장'],
-    ['천장재','사이드판 700×1850','천장재',qtyValue('ceilSide700')+'장'],
-    ['천장재','사이드판 1000×1850','천장재',qtyValue('ceilSide1000')+'장'],
-    ['천장재','간접등박스','천장재',qtyValue('ceilLightBox')+'개'],
-    ['환풍기',labelSelect('fan'),'환풍기','1개'],
-    ['다운라이트',labelSelect('downlightSize')+' / '+labelSelect('downlightColor'),'다운라이트',qtyValue('downlightQty')+'개'],
-    ['T5',labelSelect('t5'),'T5',el('t5').value==='없음'?'-':'1식'],
-    ['세면대',labelSelect('sink'),'도기','1개'],
-    ['양변기',labelSelect('toilet'),'도기','1개'],
-    ['앵글밸브','앵글밸브','배관자재',qtyValue('angleValve')+'개'],
-    ['수도꼭지',tapText,'배관자재',tapText==='없음'?'-':'1개'],
-    ['세면수전',labelSelect('basinFaucet'),'수전','1개'],
-    ['샤워수전',labelSelect('showerFaucet'),'수전','1개'],
-    ['슬라이드바',labelSelect('slideBar'),'샤워자재',el('slideBar').value==='없음'?'-':'1개'],
-    ['수건걸이',labelSelect('towelBar'),'악세서리',el('towelBar').value==='없음'?'-':'1개'],
-    ['휴지걸이',labelSelect('paperHolder'),'악세서리',el('paperHolder').value==='없음'?'-':'1개'],
-    ['코너선반',labelSelect('cornerShelf'),'악세서리',el('cornerShelf').value==='없음'?'-':'1개'],
-    ['장',labelSelect('cabinet'),'가구',el('cabinet').value==='없음'?'-':'1개'],
-    ['거울',labelSelect('mirror'),'거울',el('mirror').value==='없음'?'-':'1개'],
-    ['청소건',labelSelect('bidetSpray'),'악세서리',el('bidetSpray').value==='청소건 없음'?'-':'1개'],
-    ['파티션',labelSelect('partition'),'파티션',el('partition').value==='NONE'?'-':'1식'],
-    ['방우콘센트',labelSelect('waterproofOutlet'),'전기자재',el('waterproofOutlet').value==='없음'?'-':'1개'],
-    ['젠다이',zendaText,'젠다이',zendaText==='젠다이 없음'?'-':'1식'],
-    ['젠다이 브라켓',labelSelect('zendaBracket'),'젠다이',el('zendaBracket').value==='젠다이 브라켓 없음'?'-':'1식']
-  ];
+  rows.push(['천장재','중앙판 1350×1850','천장재',num('ceilCenter') + '장']);
+  rows.push(['천장재','사이드판 400×1850','천장재',num('ceilSide400') + '장']);
+  rows.push(['천장재','사이드판 700×1850','천장재',num('ceilSide700') + '장']);
+  rows.push(['천장재','사이드판 1000×1850','천장재',num('ceilSide1000') + '장']);
+  rows.push(['천장재','간접등박스','천장재',num('ceilLightBox') + '개']);
+  rows.push(['환풍기',txt('fan'),'환풍기','1개']);
+  rows.push(['다운라이트',txt('downlightSize') + ' / ' + txt('downlightColor'),'다운라이트',num('downlightQty') + '개']);
+  rows.push(['T5',txt('t5'),'T5',v('t5') === '없음' ? '-' : '1식']);
+  rows.push(['세면대',txt('sink'),'도기','1개']);
+  rows.push(['양변기',txt('toilet'),'도기','1개']);
+  rows.push(['앵글밸브','앵글밸브','배관자재',num('angleValve') + '개']);
+
+  var tapText = (v('tap') || '').trim() || '없음';
+  rows.push(['수도꼭지',tapText,'배관자재',tapText === '없음' ? '-' : '1개']);
+
+  rows.push(['세면수전',txt('basinFaucet'),'수전','1개']);
+  rows.push(['샤워수전',txt('showerFaucet'),'수전','1개']);
+  rows.push(['슬라이드바',txt('slideBar'),'샤워자재',v('slideBar') === '없음' ? '-' : '1개']);
+  rows.push(['수건걸이',txt('towelBar'),'악세서리',v('towelBar') === '없음' ? '-' : '1개']);
+  rows.push(['휴지걸이',txt('paperHolder'),'악세서리',v('paperHolder') === '없음' ? '-' : '1개']);
+  rows.push(['코너선반',txt('cornerShelf'),'악세서리',v('cornerShelf') === '없음' ? '-' : '1개']);
+  rows.push(['장',txt('cabinet'),'가구',v('cabinet') === '없음' ? '-' : '1개']);
+  rows.push(['거울',txt('mirror'),'거울',v('mirror') === '없음' ? '-' : '1개']);
+  rows.push(['청소건',txt('bidetSpray'),'악세서리',v('bidetSpray') === '청소건 없음' ? '-' : '1개']);
+  rows.push(['파티션',txt('partition'),'파티션',v('partition') === 'NONE' ? '-' : '1식']);
+  rows.push(['방우콘센트',txt('waterproofOutlet'),'전기자재',v('waterproofOutlet') === '없음' ? '-' : '1개']);
+  rows.push(['젠다이',zendaText,'젠다이',zendaText === '젠다이 없음' ? '-' : '1식']);
+  rows.push(['젠다이 브라켓',txt('zendaBracket'),'젠다이',v('zendaBracket') === '젠다이 브라켓 없음' ? '-' : '1식']);
+
+  return rows;
 }
 function renderSummary(){ return; }
-function renderOrder(){var s=currentSet();var width=Number(el('roomWidth').value)||0,depth=Number(el('roomDepth').value)||0,height=Number(el('roomHeight').value)||0,waste=(Number(el('wasteRate').value)||0)/100,tubDepth=Number(el('bathtub').value)||0;var wallArea=((width*height*2)+(depth*height*2))/1000000;var floorArea=(width*Math.max(0,depth-tubDepth))/1000000;var wallBoxes=Math.ceil(Math.ceil((wallArea*(1+waste))/tileArea(s.wallSize))/s.wallPiecesPerBox);var floorBoxes=Math.ceil(Math.ceil((floorArea*(1+waste))/tileArea(s.floorSize))/s.floorPiecesPerBox);var rows=[[s.wallTileName,'벽타일 / '+formatSize(s.wallSize),'타일',wallBoxes+'박스'],[s.floorTileName,'바닥타일 / '+formatSize(s.floorSize)+(tubDepth?' / 욕조 '+tubDepth+' 차감':''),'타일',floorBoxes+'박스']];if(tubDepth)rows.push(['욕조','욕조 '+tubDepth,'욕조','1개']);rows=rows.concat(productRows());el('orderResult').innerHTML='<div class="order-list"><div class="order-row header"><div>품목</div><div class="meta">구분 / 설명</div><div class="qty">발주 수량</div></div>'+rows.map(function(r){return '<div class="order-row"><div><div class="name">'+r[0]+'</div><div class="meta">'+r[2]+'</div></div><div class="meta">'+r[1]+'</div><div class="qty">'+r[3]+'</div></div>';}).join('')+'</div>';}
-function getOrderText(){
+function renderOrder(){
+  var target = el('orderResult');
+  if(!target) return;
+
   var s = currentSet();
-  var width = el('roomWidth').value, depth = el('roomDepth').value, height = el('roomHeight').value;
-  var tub = labelSelect('bathtub');
+  var width = Number(el('roomWidth') ? el('roomWidth').value : 0) || 0;
+  var depth = Number(el('roomDepth') ? el('roomDepth').value : 0) || 0;
+  var height = Number(el('roomHeight') ? el('roomHeight').value : 0) || 0;
+  var waste = (Number(el('wasteRate') ? el('wasteRate').value : 0) || 0) / 100;
+  var tubDepth = Number(el('bathtub') ? el('bathtub').value : 0) || 0;
+
+  var wallArea = ((width * height * 2) + (depth * height * 2)) / 1000000;
+  var floorDepth = Math.max(0, depth - tubDepth);
+  var floorArea = (width * floorDepth) / 1000000;
+
+  var wallPieces = Math.ceil((wallArea * (1 + waste)) / tileArea(s.wallSize));
+  var floorPieces = Math.ceil((floorArea * (1 + waste)) / tileArea(s.floorSize));
+  var wallBoxes = Math.ceil(wallPieces / s.wallPiecesPerBox);
+  var floorBoxes = Math.ceil(floorPieces / s.floorPiecesPerBox);
+
   var rows = [];
-  var orderRows = document.querySelectorAll('#orderResult .order-row:not(.header)');
+  rows.push([s.wallTileName, '벽타일 / ' + formatSize(s.wallSize), '타일', wallBoxes + '박스']);
+  rows.push([s.floorTileName, '바닥타일 / ' + formatSize(s.floorSize) + (tubDepth ? ' / 욕조 ' + tubDepth + ' 차감' : ''), '타일', floorBoxes + '박스']);
+  if(tubDepth) rows.push(['욕조', '욕조 ' + tubDepth, '욕조', '1개']);
+
+  rows = rows.concat(productRows());
+
+  target.innerHTML =
+    '<div class="order-row header"><div>품목</div><div class="meta">구분 / 설명</div><div class="qty">발주 수량</div></div>' +
+    rows.map(function(r){
+      return '<div class="order-row"><div><div class="name">' + r[0] + '</div><div class="meta">' + r[2] + '</div></div><div class="meta">' + r[1] + '</div><div class="qty">' + r[3] + '</div></div>';
+    }).join('');
+}
+function getOrderText(){
+  renderOrder();
+  var rows = [];
   rows.push('[타일파크 발주 수량 정리]');
-  rows.push('욕실 사이즈: ' + width + ' × ' + depth + ' × H' + height);
-  rows.push('욕조: ' + tub);
+  rows.push('욕실 사이즈: ' + (el('roomWidth') ? el('roomWidth').value : '-') + ' × ' + (el('roomDepth') ? el('roomDepth').value : '-') + ' × H' + (el('roomHeight') ? el('roomHeight').value : '-'));
+  rows.push('욕조: ' + (el('bathtub') && el('bathtub').options ? el('bathtub').options[el('bathtub').selectedIndex].text : '-'));
   rows.push('');
-  orderRows.forEach(function(row){
+  document.querySelectorAll('#orderResult .order-row:not(.header)').forEach(function(row){
     var name = row.querySelector('.name') ? row.querySelector('.name').innerText : '';
     var metas = row.querySelectorAll('.meta');
     var desc = metas.length > 1 ? metas[1].innerText : '';
     var qty = row.querySelector('.qty') ? row.querySelector('.qty').innerText : '';
     if(name) rows.push('- ' + name + ' / ' + desc + ' / ' + qty);
   });
-  return rows.join('\n');
+  return rows.join('\\n');
 }
 
 function copyOrderText(){
@@ -248,16 +285,48 @@ function toggleZendaOther(){
 }
 
 
-function updateAll(){toggleZendaOther();renderTileSet();renderCase();renderProducts();renderOrder();}
-function init(){el('tileSet').innerHTML=tileSets.map(function(s){return '<option value="'+s.id+'">'+s.name+'</option>';}).join('');el('tileSet').value='SET_36067_33067';document.querySelectorAll('.tab').forEach(function(btn){btn.onclick=function(){showTab(btn.getAttribute('data-tab'));};});document.querySelectorAll('[data-go]').forEach(function(btn){btn.onclick=function(){showTab(btn.getAttribute('data-go'));};});if(el('autoCeilBtn')) el('autoCeilBtn').onclick=function(){autoCeiling();updateAll();};
-if(el('shareOrderBtn')) el('shareOrderBtn').onclick=function(){shareOrderText();};
-if(el('copyOrderBtn')) el('copyOrderBtn').onclick=function(){copyOrderText();};
-if(el('saveOrderImageBtn')) el('saveOrderImageBtn').onclick=function(){saveOrderImage();};['roomWidth','roomDepth'].forEach(function(id){el(id).addEventListener('change',function(){autoCeiling();updateAll();});});['tileSet','bathtub','roomHeight','wasteRate','ceilCenter','ceilSide400','ceilSide700','ceilSide1000','ceilLightBox','fan','downlightSize','downlightColor','downlightQty','t5','sink','toilet','angleValve','tap','basinFaucet','showerFaucet','slideBar','towelBar','paperHolder','cornerShelf','cabinet','mirror','bidetSpray','partition','waterproofOutlet','zenda','zendaOther','zendaBracket','memo'].forEach(function(id){
+function updateAll(){
+  try { toggleZendaOther(); } catch(e) {}
+  try { renderTileSet(); } catch(e) {}
+  try { renderCase(); } catch(e) {}
+  try { renderProducts(); } catch(e) {}
+  try { renderOrder(); } catch(e) {
+    var target = el('orderResult');
+    if(target) target.innerHTML = '<div class="notice">발주표 표시 오류: ' + e.message + '</div>';
+  }
+}
+function init(){
+  if(el('tileSet')) {
+    el('tileSet').innerHTML = tileSets.map(function(s){return '<option value="'+s.id+'">'+s.name+'</option>';}).join('');
+    el('tileSet').value = 'SET_36067_33067';
+  }
+
+  document.querySelectorAll('.tab').forEach(function(btn){
+    btn.onclick = function(){showTab(btn.getAttribute('data-tab'));};
+  });
+  document.querySelectorAll('[data-go]').forEach(function(btn){
+    btn.onclick = function(){showTab(btn.getAttribute('data-go'));};
+  });
+
+  if(el('autoCeilBtn')) el('autoCeilBtn').onclick = function(){autoCeiling();updateAll();};
+  if(el('shareOrderBtn')) el('shareOrderBtn').onclick = function(){shareOrderText();};
+  if(el('copyOrderBtn')) el('copyOrderBtn').onclick = function(){copyOrderText();};
+  if(el('saveOrderImageBtn')) el('saveOrderImageBtn').onclick = function(){saveOrderImage();};
+
+  ['roomWidth','roomDepth'].forEach(function(id){
+    if(el(id)) el(id).addEventListener('change', function(){autoCeiling();updateAll();});
+  });
+
+  ['tileSet','bathtub','roomHeight','wasteRate','ceilCenter','ceilSide400','ceilSide700','ceilSide1000','ceilLightBox','fan','downlightSize','downlightColor','downlightQty','t5','sink','toilet','angleValve','tap','basinFaucet','showerFaucet','slideBar','towelBar','paperHolder','cornerShelf','cabinet','mirror','bidetSpray','partition','waterproofOutlet','zenda','zendaOther','zendaBracket','memo'].forEach(function(id){
     var node = el(id);
     if(!node) return;
-    node.onchange=function(){if(id==='tileSet')photoIndex=0;updateAll();};
-    node.oninput=updateAll;
-  });autoCeiling();updateAll();}
+    node.onchange = function(){ if(id === 'tileSet') photoIndex = 0; updateAll(); };
+    node.oninput = updateAll;
+  });
+
+  try { autoCeiling(); } catch(e) {}
+  updateAll();
+}
 
 window.addEventListener('error', function(e){
   var target = document.getElementById('orderResult');
